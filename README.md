@@ -15,5 +15,6 @@ positional arguments:
 
 options:
   -h, --help           show this help message and exit
+  -f, --force          Force overwriting an existing role or collection
   --parallel PARALLEL  Number of parallel installations (default: 10)
 ```
