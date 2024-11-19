@@ -39,9 +39,12 @@ def split_requirements(file_path):
     print(f"Split requirements file into individual role and collection files in the '{role_files_dir}' directory.")
     return role_files + collection_files
 
-def install_requirements(file_path):
+def install_requirements(file_path, force=False):
     try:
-        result = subprocess.run(["ansible-galaxy", "install", "-r", file_path], check=True, capture_output=True, text=True)
+        if force:
+            result = subprocess.run(["ansible-galaxy", "install", "--force", "-r", file_path], check=True, capture_output=True, text=True)
+        else:
+            result = subprocess.run(["ansible-galaxy", "install", "-r", file_path], check=True, capture_output=True, text=True)
         return f"Successfully installed from {file_path}\n{result.stdout}"
     except subprocess.CalledProcessError as e:
         return f"Failed to install from {file_path}\n{e.stderr}"
@@ -56,6 +59,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Split and install Ansible Galaxy requirements.")
     parser.add_argument('requirements_path', type=str, help="Path to the requirements.yml file")
+    parser.add_argument('-f', '--force', action='store_true', help="Force overwriting an existing role or collection")
     parser.add_argument('--parallel', type=int, default=10, help="Number of parallel installations (default: 10)")
 
     args = parser.parse_args()
@@ -64,7 +68,7 @@ def main():
     
     if files_to_install:
         with ThreadPoolExecutor(max_workers=args.parallel) as executor:
-            future_to_file = {executor.submit(install_requirements, file): file for file in files_to_install}
+            future_to_file = {executor.submit(install_requirements, file, args.force): file for file in files_to_install}
             for future in as_completed(future_to_file):
                 file = future_to_file[future]
                 try:
