@@ -41,10 +41,10 @@ def split_requirements(file_path):
 
 def install_requirements(file_path, force=False):
     try:
+        command_line = ["ansible-galaxy", "install", "-r", file_path]
         if force:
-            result = subprocess.run(["ansible-galaxy", "install", "--force", "-r", file_path], check=True, capture_output=True, text=True)
-        else:
-            result = subprocess.run(["ansible-galaxy", "install", "-r", file_path], check=True, capture_output=True, text=True)
+            command_line.append("--force")
+        result = subprocess.run(command_line, check=True, capture_output=True, text=True)
         return f"Successfully installed from {file_path}\n{result.stdout}"
     except subprocess.CalledProcessError as e:
         return f"Failed to install from {file_path}\n{e.stderr}"
